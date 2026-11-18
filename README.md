@@ -1,91 +1,237 @@
-# Franchise Manager
+﻿# Franchise Manager
 
-Fullstack technical assessment: franchise, branch and product inventory management.
+Fullstack application for managing franchises, branches, products, and product inventory.
 
-## Stack
-- Backend: ASP.NET Core Web API on .NET 8, Entity Framework Core 8, SQLite, Swagger.
-- Frontend: React 18, TypeScript and Vite.
-- Database: SQLite file (`franchises.db`) created automatically on first backend start.
+## Technologies
+
+### Backend
+- C# and ASP.NET Core Web API (.NET 8).
+- Entity Framework Core 8.
+- SQLite.
+- Swagger / OpenAPI.
+
+### Frontend
+- React 18.
+- TypeScript.
+- Vite.
 
 ## Requirements
-- .NET SDK 8.0
-- Node.js 20 or later and npm
-- Git
 
-## Run the backend
+- .NET 8 SDK.
+- Node.js 20 or later.
+- npm.
+- Git.
+
+## Project Structure
+
+```text
+franquicias-fullstack/
+├── backend/
+│   └── Franchises.Api/
+│       ├── Controllers/
+│       ├── Data/
+│       ├── DTOs/
+│       ├── Middleware/
+│       ├── Migrations/
+│       ├── Models/
+│       ├── Program.cs
+│       └── appsettings.json
+├── frontend/
+│   ├── src/
+│   ├── package.json
+│   └── vite.config.ts
+├── .gitignore
+└── README.md
+```
+
+## Running the Backend
+
 ```bash
 cd backend/Franchises.Api
 dotnet restore
 dotnet run --urls http://localhost:5000
 ```
+
+API: http://localhost:5000
+
 Swagger: http://localhost:5000/swagger
 
-The application creates the SQLite database on startup. For a production workflow, use EF Core migrations rather than `EnsureCreated`.
+The application uses SQLite and stores its database in `franchises.db`.
 
-### EF Core migrations (optional workflow)
-Install the tool if needed: `dotnet tool install --global dotnet-ef`
+Entity Framework Core automatically applies pending migrations when the backend starts.
+
+## Database Migrations
+
+The project uses Entity Framework Core migrations to manage database schema changes.
+
+Install the EF Core CLI tool if necessary:
+
 ```bash
-dotnet ef migrations add InitialCreate
+dotnet tool install --global dotnet-ef --version 8.0.11
+```
+
+Apply existing migrations:
+
+```bash
+cd backend/Franchises.Api
 dotnet ef database update
 ```
-If you add migrations, replace `Database.EnsureCreated()` in `Program.cs` with `Database.Migrate()`.
 
-## Run the frontend
+Create a new migration after modifying the data models:
+
+```bash
+dotnet ef migrations add MigrationName
+dotnet ef database update
+```
+
+## Running the Frontend
+
 Open a second terminal:
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Open http://localhost:5173. If your backend uses another URL, create `frontend/.env` from `.env.example` and set `VITE_API_URL`.
 
-## API endpoints
+Open the application at:
+
+http://localhost:5173
+
+The frontend communicates with the backend API running at `http://localhost:5000`.
+
+Configure `VITE_API_URL` through a local `.env` file if a different API URL is required. Use `.env.example` as a reference.
+
+## API Endpoints
+
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/api/franchises` | List franchises |
-| POST | `/api/franchises` | Create franchise |
-| GET | `/api/branches?franchiseId={id}` | List branches, optionally filtered |
-| POST | `/api/branches` | Create branch |
-| GET | `/api/products?branchId={id}` | List products, optionally filtered |
-| POST | `/api/products` | Create product |
+| GET | `/api/franchises` | List all franchises |
+| POST | `/api/franchises` | Create a franchise |
+| GET | `/api/branches?franchiseId={id}` | List branches, optionally filtered by franchise |
+| POST | `/api/branches` | Create a branch |
+| GET | `/api/products?branchId={id}` | List products, optionally filtered by branch |
+| POST | `/api/products` | Create a product |
 | PATCH | `/api/products/{id}/stock` | Update product stock |
 
-Example request bodies:
+### Example Request Bodies
+
+Create a franchise:
+
 ```json
-{ "name": "North Region" }
+{
+  "name": "North Region"
+}
 ```
+
+Create a branch:
+
 ```json
-{ "franchiseId": 1, "name": "Downtown Branch" }
+{
+  "franchiseId": 1,
+  "name": "Downtown Branch"
+}
 ```
+
+Create a product:
+
 ```json
-{ "branchId": 1, "name": "Coffee", "stock": 25 }
+{
+  "branchId": 1,
+  "name": "Coffee",
+  "stock": 25
+}
 ```
+
+Update product stock:
+
 ```json
-{ "stock": 40 }
+{
+  "stock": 40
+}
 ```
 
 ## Architecture
-The backend uses Controllers -> DTOs -> EF Core DbContext -> SQLite. Request DTOs validate input, controllers enforce parent-resource existence, and a middleware returns a generic error message for unexpected failures. The frontend keeps API calls in `src/api.ts` and UI state in `src/App.tsx`.
 
-## Git workflow (required assessment evidence)
-Do not commit directly to `main`. Example:
-```bash
-git init
-git add .
-git commit -m "chore: initialize franchise manager"
-git branch -M main
-git checkout -b feature/franchise-module
-git add .
-git commit -m "feat: add franchise branch and product api"
-git commit -m "feat: build inventory management interface"
-git remote add origin https://github.com/YOUR-USERNAME/franchise-manager.git
-git push -u origin main
-git push -u origin feature/franchise-module
-# Open a Pull Request on GitHub: feature/franchise-module -> main
-# Merge it on GitHub after review
+### Backend
+
+The backend is organized into the following layers:
+
+- **Controllers:** Handle HTTP requests and API endpoints.
+- **DTOs:** Define data transfer objects and validate input.
+- **Models:** Represent Franchise, Branch, and Product entities.
+- **Data:** Contains the Entity Framework Core database context.
+- **Middleware:** Handles unexpected application errors.
+- **Migrations:** Track and apply database schema changes.
+
+Entity Framework Core manages persistence through SQLite and handles entity relationships.
+
+### Frontend
+
+- `App.tsx`: Main application interface and UI state.
+- `api.ts`: Centralized API communication.
+- `style.css`: Application styles.
+
+The interface provides sections for managing franchises, branches, products, and inventory stock.
+
+## Git Workflow
+
+The project uses feature branches to keep development separate from the main branch.
+
+Main branch:
+
+```text
+main
 ```
-For the assessment, create a Pull Request on GitHub from `feature/franchise-module` into `main` and describe the API, UI and validation changes. Prefer opening the PR before merging.
+
+Feature branch:
+
+```text
+feature/franchise-module
+```
+
+To continue working on the feature branch:
+
+```bash
+git switch feature/franchise-module
+```
+
+After making changes:
+
+```bash
+git add .
+git commit -m "feat: describe your changes"
+git push
+```
+
+The feature branch is intended to be submitted to `main` through a Pull Request.
+
+GitHub repository:
+
+https://github.com/anagomezbe-oss/franquicias-fullstack
+
+## Verification
+
+Verify the backend:
+
+```bash
+cd backend/Franchises.Api
+dotnet restore
+dotnet build
+```
+
+Verify the frontend:
+
+```bash
+cd frontend
+npm install
+npm run build
+```
 
 ## Notes
-- `node_modules`, build outputs, SQLite database files and local environment files are excluded from Git.
-- This is a junior assessment starter implementation; run the verification steps below before submission.
+
+- SQLite database files are excluded from Git.
+- Build outputs and dependency folders are excluded from Git.
+- Local environment files are excluded from Git; `.env.example` is provided as a reference.
+- Database schema changes should be managed through Entity Framework Core migrations.
+
